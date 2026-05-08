@@ -1,9 +1,32 @@
-import { mockClients } from '../data/mockClients'
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
+import { db } from './firebase'
 
 export async function getClients() {
-  return mockClients
+  if (!db) {
+    return []
+  }
+
+  const snapshot = await getDocs(collection(db, 'clients'))
+
+  return snapshot.docs.map((clientDoc) => ({
+    id: clientDoc.id,
+    ...clientDoc.data(),
+  }))
 }
 
 export async function getClientById(clientId) {
-  return mockClients.find((client) => client.id === clientId) ?? null
+  if (!db || !clientId) {
+    return null
+  }
+
+  const clientDoc = await getDoc(doc(db, 'clients', clientId))
+
+  if (!clientDoc.exists()) {
+    return null
+  }
+
+  return {
+    id: clientDoc.id,
+    ...clientDoc.data(),
+  }
 }

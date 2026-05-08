@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { mockClients } from '../data/mockClients'
 import { mockFollowUps } from '../data/mockFollowUps'
+import { getClients } from '../services/clientService'
 
 function Icon({ name, className = '' }) {
   const icons = {
@@ -137,6 +138,32 @@ const statusOrderMap = {
 }
 
 export function DashboardPage() {
+  const [clients, setClients] = useState([])
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadClients() {
+      try {
+        const loadedClients = await getClients()
+
+        if (isMounted) {
+          setClients(Array.isArray(loadedClients) ? loadedClients : [])
+        }
+      } catch {
+        if (isMounted) {
+          setClients([])
+        }
+      }
+    }
+
+    loadClients()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   const todayItems = mockFollowUps
     .filter((item) => item.status === 'today' || item.status === 'overdue')
     .sort((left, right) => statusOrderMap[left.status] - statusOrderMap[right.status])
@@ -144,7 +171,7 @@ export function DashboardPage() {
   const featuredFollowUps = todayItems.slice(0, 3)
   const overdueCount = mockFollowUps.filter((item) => item.status === 'overdue').length
   const weeklyCount = mockFollowUps.filter((item) => item.status === 'today' || item.status === 'overdue' || item.status === 'week').length
-  const recentClients = [mockClients[0], mockClients[3]].filter(Boolean)
+  const recentClients = clients.slice(0, 2)
 
   return (
     <div className="page-stack dashboard-page">
@@ -282,7 +309,7 @@ export function DashboardPage() {
               </div>
               <div className="dashboard-recent-card__body">
                 <strong>{client.code}</strong>
-                <span>{client.tags.join(' ｜ ')}</span>
+                <span>{Array.isArray(client.tags) ? client.tags.join(' ｜ ') : ''}</span>
               </div>
             </Link>
           ))}
