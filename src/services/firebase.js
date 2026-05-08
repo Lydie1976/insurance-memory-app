@@ -25,9 +25,10 @@ export const isFirebaseEnabled = requiredConfigKeys.every((key) => {
   return typeof value === 'string' && value.trim().length > 0
 })
 
-export const firebaseApp = isFirebaseEnabled ? initializeApp(firebaseConfig) : null
-export const auth = firebaseApp ? getAuth(firebaseApp) : null
-export const db = firebaseApp ? getFirestore(firebaseApp) : null
+export const app = isFirebaseEnabled ? initializeApp(firebaseConfig) : null
+export const auth = app ? getAuth(app) : null
+export const db = app ? getFirestore(app) : null
+export const firebaseApp = app
 
 export function getFirebaseStatus() {
   return isFirebaseEnabled
